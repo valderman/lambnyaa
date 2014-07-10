@@ -4,10 +4,15 @@ module Network.LambNyaa.Scheduler (schedule) where
 import Control.Concurrent (threadDelay)
 import Control.Monad (forM_)
 import Data.Hashable
+import Data.List
+import Data.IORef
 import qualified Database.SQLite.Simple as DB
 import Network.LambNyaa.Config
 import Network.LambNyaa.Types
+import Network.LambNyaa.Sink
 import Network.LambNyaa.Database
+import Network.LambNyaa.FiniteChan
+
 
 -- | Pause thread for a number of seconds.
 delaySecs :: Int -> IO ()
@@ -32,6 +37,9 @@ every :: Int -> IO () -> IO ()
 every secs m = go where go = m >> delaySecs secs >> go
 
 -- | Execute a pipeline, from Source to Sink.
+--   TODO:
+--     * nub isn't very efficient, replace with something smarter.
+--     * with barrier sync, we could run all sinks in parallel
 execute :: Config -> IO ()
 execute cfg = do
   -- Create Items from sources
@@ -41,9 +49,14 @@ execute cfg = do
   -- Fill in seen before info
   items' <- withSQLite cfg $ \c -> mapM (fillSeen c) items
   -- Run pipeline
-  sequence_ [act cfg |
-             flt <- cfgFilters cfg,
-             Accept act <- map flt items']
+  sinks <- nub `fmap` sequence [act >> return s |
+                                flt <- cfgFilters cfg,
+                                Accept s act <- map flt items']
+  -- Handle items
+  mapM_ (\s -> readIORef (sinkChan s) >>= closeChan) sinks
+  mapM_ (flip sinkHandler cfg) sinks
+  -- Reset sinks
+  mapM_ reinitSink sinks
 
 fillSeen :: DB.Connection -> Item -> IO Item
 fillSeen c item = do

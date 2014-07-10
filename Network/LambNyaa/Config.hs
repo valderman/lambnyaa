@@ -1,15 +1,17 @@
 module Network.LambNyaa.Config (
     Config, TimeUnit (..), Schedule (..),
-    Action (..), Filter,
+    Action (..), Sink (..), Filter,
     cfgSources, cfgFilters, cfgSchedule, cfgDatabase,
     def
   ) where
 import Data.Default
 import {-# SOURCE #-} Network.LambNyaa.Types
 import Network.LambNyaa.Item
+import Network.LambNyaa.FiniteChan
 import System.IO.Unsafe
 import System.Directory
 import System.FilePath
+import Data.IORef
 import Control.Monad
 
 -- | A unit of time.
@@ -50,9 +52,20 @@ defaultDB = unsafePerformIO $ do
 --   An Item may have one of two possible fates: either it is accepted into a
 --   Sink, or it is passed to the next filter in the pipeline. Discarding an
 --   item is implemented by accepting it into a no-op Sink.
-data Action = Accept (Config -> IO ()) | Pass Item
+data Action = Accept Sink (IO ()) | Pass Item
 
 -- | Filters are used to decide which Items are accepted into which sinks.
 --   A Filter may accept or discard items, removing them from the stream,
 --   or alter any aspect of an Item.
 type Filter = Item -> Action
+
+-- | A Sink is the endpoint of a stream. It consists of an IO action taking a
+--   list of Items as its input, contains all Items accepted into the sink.
+data Sink = Sink {
+    sinkHandler :: Config -> IO (),
+    sinkChan    :: IORef (Chan Item),
+    writeSink   :: Item -> IO ()
+  }
+
+instance Eq Sink where
+  a == b = sinkChan a == sinkChan b

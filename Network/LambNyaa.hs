@@ -7,12 +7,12 @@ module Network.LambNyaa (
     module Network.LambNyaa.Sink.Download,
     module Network.LambNyaa.Filters,
     module Network.LambNyaa.Scheduler,
-    URL, Item (..), Sink, Source,
+    URL, Item (..), Action, Sink, Source,
     sink, sink_, printItem, seen, unseen
   ) where
 import Data.Default
 import Data.Monoid
-import Network.LambNyaa.Config
+import Network.LambNyaa.Config hiding (Action, Sink, Source)
 import Network.LambNyaa.Types
 import Network.LambNyaa.Source
 import Network.LambNyaa.Source.Nyaa
