@@ -22,7 +22,7 @@ import Network.LambNyaa.Scheduler
 import Network.LambNyaa.Filters
 
 -- TODO:
---   * Sinks: email, RSS, better downloader
+--   * Sinks: email, RSS
 --   * Sources: RSS
 --   * More robust Item extraction from Source.Nyaa
 --   * Remember and disregard previously seen Items (SQLite?)
