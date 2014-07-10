@@ -52,7 +52,8 @@ mkItem title url = Item {
       itmURL         = url,
       itmSource      = "Nyaa",
       itmDescription = Nothing,
-      itmTags        = tags
+      itmTags        = tags,
+      itmSeenBefore  = False
     }
   where
     (name, tags) = maybe (title, []) id $ parseName title

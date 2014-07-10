@@ -7,18 +7,19 @@ type URL = String
 
 -- | A data item. What, exactly, a data item represents depends on the source.
 data Item = Item {
-    itmName        :: String,  -- ^ The human readable name of the item.
-    itmURL         :: URL,     -- ^ The URL associated with an item.
-    itmSource      :: String,  -- ^ Name of the source that produced the item.
+    itmName        :: String,   -- ^ The human readable name of the item.
+    itmURL         :: URL,      -- ^ The URL associated with an item.
+    itmSource      :: String,   -- ^ Name of the source that produced the item.
     itmDescription :: Maybe String, -- ^ An optional plaintext description of
                                     --   the item.
-    itmTags        :: [String] -- ^ A list of tags that somehow apply to
-                               --   the item. How this is filled is up to the
-                               --   Source that produces it. For instance, the
-                               --   NyaaTorrents source treats each phrase
-                               --   inside square brackets within an item name
-                               --   as a tag, to create tags for fansub group
-                               --   names, resolution, checksum, etc.
+    itmTags        :: [String], -- ^ A list of tags that somehow apply to
+                                --   the item. How this is filled is up to the
+                                --   Source that produces it. For instance, the
+                                --   NyaaTorrents source treats each phrase
+                                --   inside square brackets within an item name
+                                --   as a tag, to create tags for fansub group
+                                --   names, resolution, checksum, etc.
+    itmSeenBefore :: Bool       -- ^ Has this item been seen before?
   } deriving Show
 
 -- | A Sink is the endpoint of a stream. It consists of an IO action taking an
