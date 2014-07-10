@@ -1,6 +1,7 @@
 module Network.LambNyaa.Config (
     Config, TimeUnit (..), Schedule (..),
-    cfgSources, cfgFilters, cfgSchedule, cfgDatabase
+    cfgSources, cfgFilters, cfgSchedule, cfgDatabase,
+    def
   ) where
 import Data.Default
 import Network.LambNyaa.Types

@@ -21,6 +21,7 @@ library
     Network.LambNyaa,
     Network.LambNyaa.Types,
     Network.LambNyaa.Parser,
+    Network.LambNyaa.Database,
     Network.LambNyaa.Source.Nyaa,
     Network.LambNyaa.Sink.Download
   other-modules:       
