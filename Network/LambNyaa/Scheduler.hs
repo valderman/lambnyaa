@@ -27,7 +27,8 @@ every secs m = go where go = m >> delaySecs secs >> go
 execute :: Config -> IO ()
 execute cfg = do
   itemses <- mapM unSource $ cfgSources cfg
-  sequence_ $ [unSink (flt item) item |
+  sequence_ $ [act |
                flt <- cfgFilters cfg,
                items <- itemses,
-               item <- items]
+               item <- items,
+               Accept act <- [flt item]]

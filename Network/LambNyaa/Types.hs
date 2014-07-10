@@ -14,7 +14,8 @@ data Item = Item {
 
 newtype Sink = Sink {unSink ::  (Item -> IO ())}
 newtype Source = Source {unSource :: IO [Item]}
-type Filter = Item -> Sink
+data Action = Accept (IO ()) | Pass Item
+type Filter = Item -> Action
 
 instance Monoid Sink where
   mempty = Sink $ \_ -> return ()

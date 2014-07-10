@@ -1,17 +1,36 @@
 module Network.LambNyaa.Filters where
+import Data.Monoid
 import Network.LambNyaa.Types
 import Network.LambNyaa.Sink
 
--- | Pass all Items to the given Sink.
-always :: Sink -> Filter
-always s = const s
+(>>>) :: Filter -> Filter -> Filter
+a >>> b = \i ->
+  case a i of
+    Pass i' -> b i'
+    a'      -> a'
+
+-- | Accept an Item into the given sink.
+accept :: Sink -> Filter
+accept s i = Accept (unSink s i)
+
+-- | Pass an Item to the next stage of the pipeline.
+pass :: Filter
+pass = Pass
+
+-- | Discard an Item from the stream.
+discard :: Filter
+discard = accept mempty
+
+-- | Apply a function to each Item in the stream.
+mapItem :: (Item -> Item) -> Filter
+mapItem f = pass . f
 
 -- | Pass all Items fulfilling a certain predicate to the given Sink.
-when :: (Item -> Bool) -> Sink -> Filter
-when p s = \i -> if p i then s else ignore
+when :: (Item -> Bool) -> Filter -> Filter
+when p f = \i -> if p i then f i else pass i
 
 -- | Pass all Items NOT fulfilling a certain predicate to the given Sink.
-unless :: (Item -> Bool) -> Sink -> Filter
+unless :: (Item -> Bool) -> Filter -> Filter
 unless p s = when (not . p) s
 
 -- | True for all Items which have the given String in their itmTags list.
