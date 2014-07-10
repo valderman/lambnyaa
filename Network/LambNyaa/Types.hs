@@ -16,9 +16,9 @@ data Item = Item {
                                --   the item. How this is filled is up to the
                                --   Source that produces it. For instance, the
                                --   NyaaTorrents source treats each phrase
-                               --   inside brackets within an item name as a
-                               --   tag, to create tags for fansub group names,
-                               --   resolution, checksum, etc.
+                               --   inside square brackets within an item name
+                               --   as a tag, to create tags for fansub group
+                               --   names, resolution, checksum, etc.
   } deriving Show
 
 -- | A Sink is the endpoint of a stream. It consists of an IO action taking an

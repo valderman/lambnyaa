@@ -1,4 +1,8 @@
-module Network.LambNyaa.Source.Nyaa where
+-- | NyaaTorrents downloader source.
+--   Items are produced from scraping the Nyaa search page.
+--   Torrent titles end up in the itmName field of the produced Items, and any
+--   phrases within square brackets go into the itmTags field.
+module Network.LambNyaa.Source.Nyaa (nyaaSearch) where
 import Data.List (isPrefixOf)
 import Data.Maybe (catMaybes)
 import Data.Monoid

@@ -20,15 +20,15 @@ library
   exposed-modules:
     Network.LambNyaa,
     Network.LambNyaa.Types,
-    Network.LambNyaa.Parser
+    Network.LambNyaa.Parser,
+    Network.LambNyaa.Source.Nyaa,
+    Network.LambNyaa.Sink.Download
   other-modules:       
     Network.LambNyaa.Filters,
     Network.LambNyaa.Scheduler,
     Network.LambNyaa.Config,
     Network.LambNyaa.Sink,
-    Network.LambNyaa.Source,
-    Network.LambNyaa.Sink.Download,
-    Network.LambNyaa.Source.Nyaa
+    Network.LambNyaa.Source
   other-extensions: 
     PatternGuards,
     FlexibleInstances
