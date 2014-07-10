@@ -7,6 +7,11 @@ type URL = String
 
 -- | A data item. What, exactly, a data item represents depends on the source.
 data Item = Item {
+    itmIdentifier  :: Int,      -- ^ A unique identifier for Items, used to
+                                --   decide whether an Item has been previously
+                                --   encountered. This value is a hash of the
+                                --   itmName, itmURL, itmTags and
+                                --   itmDescription fields.
     itmName        :: String,   -- ^ The human readable name of the item.
     itmURL         :: URL,      -- ^ The URL associated with an item.
     itmSource      :: String,   -- ^ Name of the source that produced the item.
@@ -19,7 +24,8 @@ data Item = Item {
                                 --   inside square brackets within an item name
                                 --   as a tag, to create tags for fansub group
                                 --   names, resolution, checksum, etc.
-    itmSeenBefore :: Bool       -- ^ Has this item been seen before?
+    itmSeenBefore :: Bool       -- ^ Has this item been seen before? This field
+                                --   is filled in automatically.
   } deriving Show
 
 -- | A Sink is the endpoint of a stream. It consists of an IO action taking an
