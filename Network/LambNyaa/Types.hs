@@ -1,6 +1,7 @@
 module Network.LambNyaa.Types where
 import Control.Monad (mapM_)
 import Data.Monoid
+import Data.Hashable
 
 -- | Vanity type for URLs.
 type URL = String
@@ -27,6 +28,13 @@ data Item = Item {
     itmSeenBefore :: Bool       -- ^ Has this item been seen before? This field
                                 --   is filled in automatically.
   } deriving Show
+
+instance Hashable Item where
+  hashWithSalt salt item =
+    salt         `hashWithSalt`
+    itmName item `hashWithSalt`
+    itmURL item  `hashWithSalt`
+    itmTags item `hashWithSalt` itmDescription item
 
 -- | A Sink is the endpoint of a stream. It consists of an IO action taking an
 --   Item as its input, which is executed once for each Item that is accepted
