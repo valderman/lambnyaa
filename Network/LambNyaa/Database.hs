@@ -33,8 +33,8 @@ markSeen ident _ cfg = withSQLite cfg $ \c -> do
   execute c "DELETE FROM _seen WHERE id = ?" (Only ident)
 
 -- | Was the given item seen before?
-wasSeen :: Int -> Config -> IO Bool
-wasSeen ident cfg = withSQLite cfg $ \c -> do
+wasSeen :: Int -> Connection -> IO Bool
+wasSeen ident c = do
   res <- query c "SELECT id FROM _seen WHERE id = ?" (Only ident)
   case res of
     [Only (n :: Int)] -> return True

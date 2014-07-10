@@ -1,9 +1,13 @@
 {-# LANGUAGE PatternGuards #-}
+-- | Main executive for LambNyaa.
 module Network.LambNyaa.Scheduler (schedule) where
 import Control.Concurrent (threadDelay)
 import Control.Monad (forM_)
+import Data.Hashable
+import qualified Database.SQLite.Simple as DB
 import Network.LambNyaa.Config
 import Network.LambNyaa.Types
+import Network.LambNyaa.Database
 
 -- | Pause thread for a number of seconds.
 delaySecs :: Int -> IO ()
@@ -30,9 +34,18 @@ every secs m = go where go = m >> delaySecs secs >> go
 -- | Execute a pipeline, from Source to Sink.
 execute :: Config -> IO ()
 execute cfg = do
+  -- Create Items from sources
   itemses <- mapM unSource $ cfgSources cfg
-  sequence_ $ [act cfg |
-               flt <- cfgFilters cfg,
-               items <- itemses,
-               item <- items,
-               Accept act <- [flt item]]
+  -- Fill in identifiers
+  let items = concat $ map (map (\i -> i {itmIdentifier = hash i})) itemses
+  -- Fill in seen before info
+  items' <- withSQLite cfg $ \c -> mapM (fillSeen c) items
+  -- Run pipeline
+  sequence_ [act cfg |
+             flt <- cfgFilters cfg,
+             Accept act <- map flt items']
+
+fillSeen :: DB.Connection -> Item -> IO Item
+fillSeen c item = do
+  seen <- wasSeen (itmIdentifier item) c
+  return $ item {itmSeenBefore = seen}

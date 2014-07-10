@@ -35,6 +35,10 @@ when p f = \i -> if p i then f i else pass i
 unless :: (Item -> Bool) -> Filter -> Filter
 unless p s = when (not . p) s
 
+-- | Has this Item been seen before?
+seenBefore :: Item -> Bool
+seenBefore = itmSeenBefore
+
 -- | True for all Items which have the given String in their itmTags list.
 tagged :: String -> Item -> Bool
 tagged tag i = tag `elem` itmTags i
