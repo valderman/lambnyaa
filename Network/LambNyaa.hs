@@ -20,3 +20,10 @@ import Network.LambNyaa.Sink
 import Network.LambNyaa.Sink.Download
 import Network.LambNyaa.Scheduler
 import Network.LambNyaa.Filters
+
+-- TODO:
+--   * Sinks: email, RSS, better downloader
+--   * Sources: RSS
+--   * More robust Item extraction from Source.Nyaa
+--   * Remember and disregard previously seen Items (SQLite?)
+--   * Properly Haddock everything
