@@ -50,7 +50,7 @@ defaultDB = unsafePerformIO $ do
 --   An Item may have one of two possible fates: either it is accepted into a
 --   Sink, or it is passed to the next filter in the pipeline. Discarding an
 --   item is implemented by accepting it into a no-op Sink.
-data Action = Accept Sink Item | Pass Item
+data Action = Accept [Sink] Item | Pass Item
 
 -- | Filters are used to decide which Items are accepted into which sinks.
 --   A Filter may accept or discard items, removing them from the stream,

@@ -1,18 +1,26 @@
+{-# LANGUAGE FlexibleInstances #-}
 module Network.LambNyaa.Filters where
 import Data.Monoid
 import Network.LambNyaa.Types
 import Network.LambNyaa.Sink
 
--- | Connect two filters.
+-- | Connect two filters in sequence; items only pass to the second filter if
+--   they are not accepted or discarded by the first.
 (>>>) :: Filter -> Filter -> Filter
 a >>> b = \i ->
   case a i of
     Pass i' -> b i'
     a'      -> a'
 
--- | Accept an Item into the given sink.
-accept :: Sink -> Filter
-accept s i = Accept s i
+class Sinks s where
+  -- | Accept an Item into the given sink or sinks.
+  accept :: s -> Filter
+
+instance Sinks Sink where
+  accept s = Accept [s]
+
+instance Sinks [Sink] where
+  accept = Accept
 
 -- | Pass over an Item, allowing the next stage in the pipeline to decide
 --   whether it should be accepted or not.

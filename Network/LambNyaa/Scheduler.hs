@@ -43,9 +43,10 @@ execute cfg = do
   -- Fill in seen before info
   items' <- withSQLite cfg $ \c -> mapM (fillSeen c) items
   -- Run pipeline
-  fillSinks cfg [(s, item) |
+  fillSinks cfg [(sink, item) |
                  flt <- cfgFilters cfg,
-                 Accept s item <- map flt items']
+                 Accept sinks item <- map flt items',
+                 sink <- sinks]
 
 -- | Fill in the "seen before" field of an Item.
 fillSeen :: DB.Connection -> Item -> IO Item

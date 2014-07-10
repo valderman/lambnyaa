@@ -1,6 +1,7 @@
 module Network.LambNyaa.Sink (
     Sink (..), sink, sink_, printItem, seen, unseen
   ) where
+import Data.Monoid
 import Network.LambNyaa.Types
 import Network.LambNyaa.Database
 import System.IO.Unsafe
@@ -37,3 +38,9 @@ seen = sink $ \cfg is -> withSQLite cfg $ \c -> do
 unseen :: Sink
 unseen = sink $ \cfg is -> withSQLite cfg $ \c -> do
   mapM_ (\i -> markSeen (itmIdentifier i) False c) is
+
+instance Monoid Sink where
+  mempty = sink_ . const $ return ()
+  mappend a b = sink $ \cfg is -> do
+    sinkHandler a cfg is
+    sinkHandler b cfg is

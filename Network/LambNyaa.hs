@@ -25,5 +25,4 @@ import Network.LambNyaa.Filters
 --   * Sinks: email, RSS
 --   * Sources: RSS
 --   * More robust Item extraction from Source.Nyaa
---   * Remember and disregard previously seen Items (SQLite?)
 --   * Properly Haddock everything
