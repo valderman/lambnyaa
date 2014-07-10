@@ -8,7 +8,7 @@ module Network.LambNyaa (
     module Network.LambNyaa.Sink.Download,
     module Network.LambNyaa.Filters,
     module Network.LambNyaa.Scheduler,
-    URL, Item (..), Sink, Source, Filter
+    URL, Item (..), Sink, Source, Filter, Action
   ) where
 import Data.Default
 import Data.Monoid
