@@ -3,6 +3,7 @@ import Data.Monoid
 import Network.LambNyaa.Types
 import Network.LambNyaa.Sink
 
+-- | Connect two filters.
 (>>>) :: Filter -> Filter -> Filter
 a >>> b = \i ->
   case a i of
@@ -13,11 +14,12 @@ a >>> b = \i ->
 accept :: Sink -> Filter
 accept s i = Accept (unSink s i)
 
--- | Pass an Item to the next stage of the pipeline.
+-- | Pass over an Item, allowing the next stage in the pipeline to decide
+--   whether it should be accepted or not.
 pass :: Filter
 pass = Pass
 
--- | Discard an Item from the stream.
+-- | Discard an Item from the stream. It will not be accepted into any Sink.
 discard :: Filter
 discard = accept mempty
 

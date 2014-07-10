@@ -8,12 +8,13 @@ import Network.Download
 import Text.HTML.TagSoup
 import Network.LambNyaa.Types
 import Network.LambNyaa.Parser
+import Network.LambNyaa.Source
 
 -- | Create an Item source from a Nyaa search. This relies on parsing the HTML
 --   of the Nyaa search page, so it'll break any time their search page gets an
 --   overhaul.
 nyaaSearch :: String -> Source
-nyaaSearch s = Source $ do
+nyaaSearch s = listIO $ do
   ets <- openAsTags $ "http://www.nyaa.se/?page=search&term=" ++ encode s
   case ets of
     Right es -> return $ getItems es
