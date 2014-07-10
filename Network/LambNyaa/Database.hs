@@ -26,11 +26,9 @@ initDB :: Connection -> IO ()
 initDB c = execute_ c $ "CREATE TABLE _seen (id INTEGER PRIMARY KEY NOT NULL);"
 
 -- | Mark an item as seen or unseen.
-markSeen :: Int -> Bool -> Config -> IO ()
-markSeen ident True cfg = withSQLite cfg $ \c -> do
-  execute c "INSERT INTO _seen VALUES (?)" (Only ident)
-markSeen ident _ cfg = withSQLite cfg $ \c -> do
-  execute c "DELETE FROM _seen WHERE id = ?" (Only ident)
+markSeen :: Int -> Bool -> Connection -> IO ()
+markSeen ident True c = execute c "INSERT INTO _seen VALUES (?)" (Only ident)
+markSeen ident _ c    = execute c "DELETE FROM _seen WHERE id = ?" (Only ident)
 
 -- | Was the given item seen before?
 wasSeen :: Int -> Connection -> IO Bool

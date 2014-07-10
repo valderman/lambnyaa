@@ -30,8 +30,10 @@ printItem = sink_ $ mapM_ print
 
 -- | Mark an item as seen.
 seen :: Sink
-seen = sink $ \cfg -> mapM_ $ \i -> markSeen (itmIdentifier i) True cfg
+seen = sink $ \cfg is -> withSQLite cfg $ \c -> do
+  mapM_ (\i -> markSeen (itmIdentifier i) True c) is
 
--- | Mark an item as unseen.
+-- | Mark an item as seen.
 unseen :: Sink
-unseen = sink $ \cfg -> mapM_ $ \i -> markSeen (itmIdentifier i) False cfg
+unseen = sink $ \cfg is -> withSQLite cfg $ \c -> do
+  mapM_ (\i -> markSeen (itmIdentifier i) False c) is
