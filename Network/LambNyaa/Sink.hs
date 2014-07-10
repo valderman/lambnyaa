@@ -1,26 +1,24 @@
 module Network.LambNyaa.Sink (
-    Sink (..), reinitSink, sink, sink_, printItem, seen, unseen
+    Sink (..), sink, sink_, printItem, seen, unseen
   ) where
 import Network.LambNyaa.Types
 import Network.LambNyaa.Database
-import Network.LambNyaa.FiniteChan
 import System.IO.Unsafe
 import Data.IORef
+
+{-# NOINLINE sinkCtr #-}
+sinkCtr :: IORef Int
+sinkCtr = unsafePerformIO $ newIORef 0
 
 -- | Create a Sink from any IO action.
 {-# NOINLINE sink #-}
 sink :: (Config -> [Item] -> IO ()) -> Sink
 sink f = unsafePerformIO $ do
-  r <- newChan >>= newIORef
+  ctr <- atomicModifyIORef' sinkCtr (\ctr -> (ctr+1, ctr))
   return $ Sink {
-      sinkHandler = \cfg -> readIORef r >>= getChanContents >>= f cfg,
-      sinkChan    = r,
-      writeSink   = \i -> readIORef r >>= flip writeChan i
+      sinkHandler = f,
+      sinkID      = ctr
     }
-
--- | Reinitialize a Sink by giving it a new Chan.
-reinitSink :: Sink -> IO ()
-reinitSink s = newChan >>= writeIORef (sinkChan s)
 
 -- | Create a Sink from any IO action; Config-less version.
 sink_ :: ([Item] -> IO ()) -> Sink

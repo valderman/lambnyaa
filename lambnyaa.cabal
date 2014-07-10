@@ -30,8 +30,7 @@ library
     Network.LambNyaa.Scheduler,
     Network.LambNyaa.Config,
     Network.LambNyaa.Sink,
-    Network.LambNyaa.Source,
-    Network.LambNyaa.FiniteChan
+    Network.LambNyaa.Source
   other-extensions: 
     PatternGuards,
     FlexibleInstances

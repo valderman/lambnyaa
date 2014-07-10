@@ -5,14 +5,11 @@ import Control.Concurrent (threadDelay)
 import Control.Monad (forM_)
 import Data.Hashable
 import Data.List
-import Data.IORef
 import qualified Database.SQLite.Simple as DB
 import Network.LambNyaa.Config
 import Network.LambNyaa.Types
 import Network.LambNyaa.Sink
 import Network.LambNyaa.Database
-import Network.LambNyaa.FiniteChan
-
 
 -- | Pause thread for a number of seconds.
 delaySecs :: Int -> IO ()
@@ -37,9 +34,6 @@ every :: Int -> IO () -> IO ()
 every secs m = go where go = m >> delaySecs secs >> go
 
 -- | Execute a pipeline, from Source to Sink.
---   TODO:
---     * nub isn't very efficient, replace with something smarter.
---     * with barrier sync, we could run all sinks in parallel
 execute :: Config -> IO ()
 execute cfg = do
   -- Create Items from sources
@@ -49,16 +43,23 @@ execute cfg = do
   -- Fill in seen before info
   items' <- withSQLite cfg $ \c -> mapM (fillSeen c) items
   -- Run pipeline
-  sinks <- nub `fmap` sequence [act >> return s |
-                                flt <- cfgFilters cfg,
-                                Accept s act <- map flt items']
-  -- Handle items
-  mapM_ (\s -> readIORef (sinkChan s) >>= closeChan) sinks
-  mapM_ (flip sinkHandler cfg) sinks
-  -- Reset sinks
-  mapM_ reinitSink sinks
+  fillSinks cfg [(s, item) |
+                 flt <- cfgFilters cfg,
+                 Accept s item <- map flt items']
 
+-- | Fill in the "seen before" field of an Item.
 fillSeen :: DB.Connection -> Item -> IO Item
 fillSeen c item = do
   seen <- wasSeen (itmIdentifier item) c
   return $ item {itmSeenBefore = seen}
+
+-- | Batch all Items bound for a particular Sink, then shove that batch into
+--   said Sink. Repeat for all distinct Sinks in list.
+fillSinks :: Config -> [(Sink, Item)] -> IO ()
+fillSinks cfg =
+    mapM_ feedSinks
+      . groupBy (\(a, _) (b, _) -> a == b)
+      . sortBy (\(a, _) (b, _) -> compare a b)
+  where
+    feedSinks :: [(Sink, Item)] -> IO ()
+    feedSinks xs = sinkHandler (fst $ head xs) cfg (map snd xs)

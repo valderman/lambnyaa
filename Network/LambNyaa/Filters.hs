@@ -12,7 +12,7 @@ a >>> b = \i ->
 
 -- | Accept an Item into the given sink.
 accept :: Sink -> Filter
-accept s i = Accept s (writeSink s i)
+accept s i = Accept s i
 
 -- | Pass over an Item, allowing the next stage in the pipeline to decide
 --   whether it should be accepted or not.
