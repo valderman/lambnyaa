@@ -1,10 +1,12 @@
 module Network.LambNyaa.Config (
     Config, TimeUnit (..), Schedule (..),
+    Action (..), Filter,
     cfgSources, cfgFilters, cfgSchedule, cfgDatabase,
     def
   ) where
 import Data.Default
-import Network.LambNyaa.Types
+import {-# SOURCE #-} Network.LambNyaa.Types
+import Network.LambNyaa.Item
 import System.IO.Unsafe
 import System.Directory
 import System.FilePath
@@ -43,3 +45,14 @@ defaultDB = unsafePerformIO $ do
   d <- doesDirectoryExist dir
   when (not d) $ createDirectory dir
   return $ dir </> "database.sqlite"
+
+-- | Actions decide what happens to an Item after passing through a filter.
+--   An Item may have one of two possible fates: either it is accepted into a
+--   Sink, or it is passed to the next filter in the pipeline. Discarding an
+--   item is implemented by accepting it into a no-op Sink.
+data Action = Accept (Config -> IO ()) | Pass Item
+
+-- | Filters are used to decide which Items are accepted into which sinks.
+--   A Filter may accept or discard items, removing them from the stream,
+--   or alter any aspect of an Item.
+type Filter = Item -> Action

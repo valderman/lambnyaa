@@ -12,7 +12,7 @@ download dir ext = download' $ \item ->
 
 -- | Sink that downloads the URL associated with a given Item.
 download' :: (Item -> FilePath) -> Sink
-download' mkPath = sink $ \item -> do
+download' mkPath = sink_ $ \item -> do
   ef <- openURI (itmURL item)
   case ef of
     Right f -> BS.writeFile (mkPath item) f

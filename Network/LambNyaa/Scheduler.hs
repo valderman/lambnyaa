@@ -31,7 +31,7 @@ every secs m = go where go = m >> delaySecs secs >> go
 execute :: Config -> IO ()
 execute cfg = do
   itemses <- mapM unSource $ cfgSources cfg
-  sequence_ $ [act |
+  sequence_ $ [act cfg |
                flt <- cfgFilters cfg,
                items <- itemses,
                item <- items,

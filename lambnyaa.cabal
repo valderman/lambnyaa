@@ -25,6 +25,7 @@ library
     Network.LambNyaa.Source.Nyaa,
     Network.LambNyaa.Sink.Download
   other-modules:       
+    Network.LambNyaa.Item,
     Network.LambNyaa.Filters,
     Network.LambNyaa.Scheduler,
     Network.LambNyaa.Config,

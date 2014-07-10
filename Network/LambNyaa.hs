@@ -4,11 +4,11 @@ module Network.LambNyaa (
     module Network.LambNyaa.Config,
     module Network.LambNyaa.Source,
     module Network.LambNyaa.Source.Nyaa,
-    module Network.LambNyaa.Sink,
     module Network.LambNyaa.Sink.Download,
     module Network.LambNyaa.Filters,
     module Network.LambNyaa.Scheduler,
-    URL, Item (..), Sink, Source, Filter, Action
+    URL, Item (..), Sink, Source,
+    sink, sink_, printItem
   ) where
 import Data.Default
 import Data.Monoid
