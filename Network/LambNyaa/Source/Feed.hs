@@ -2,7 +2,7 @@
 --   Items are produced from RSS 2.0 feeds.
 --   The itmName, itmURL and itmDescription fields are filled from the
 --   corresponding RSS fields.
---   The itmTags field is left empty.
+--   The itmTags field is populated from the RSS tags.
 --
 --   TODO: support for other feed formats.
 module Network.LambNyaa.Source.Feed (rssFeed, rssFeed') where
@@ -35,5 +35,5 @@ getItem src item = Item {
     itmURL         = maybe "" id (rssItemLink item),
     itmDescription = rssItemDescription item,
     itmSource      = src,
-    itmTags        = []
+    itmTags        = map rssCategoryValue $ rssItemCategories item
   }
