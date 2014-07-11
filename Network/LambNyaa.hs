@@ -6,6 +6,7 @@ module Network.LambNyaa (
     module Network.LambNyaa.Source.Nyaa,
     module Network.LambNyaa.Source.RSS,
     module Network.LambNyaa.Sink.Download,
+    module Network.LambNyaa.Sink.RSS,
     module Network.LambNyaa.Filters,
     module Network.LambNyaa.Scheduler,
     URL, Item (..), Action, Sink, Source,
@@ -20,11 +21,10 @@ import Network.LambNyaa.Source.Nyaa
 import Network.LambNyaa.Source.RSS
 import Network.LambNyaa.Sink
 import Network.LambNyaa.Sink.Download
+import Network.LambNyaa.Sink.RSS
 import Network.LambNyaa.Scheduler
 import Network.LambNyaa.Filters
 
 -- TODO:
---   * Sinks: email, RSS
---   * Sources: RSS
+--   * Sinks: email
 --   * More robust Item extraction from Source.Nyaa
---   * Properly Haddock everything

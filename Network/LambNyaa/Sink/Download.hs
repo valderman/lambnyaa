@@ -1,3 +1,4 @@
+-- | Downloader sink; download files associated with Items.
 module Network.LambNyaa.Sink.Download where
 import Network.LambNyaa.Types
 import Network.LambNyaa.Sink

@@ -24,7 +24,8 @@ library
     Network.LambNyaa.Database,
     Network.LambNyaa.Source.Nyaa,
     Network.LambNyaa.Source.RSS,
-    Network.LambNyaa.Sink.Download
+    Network.LambNyaa.Sink.Download,
+    Network.LambNyaa.Sink.RSS
   other-modules:       
     Network.LambNyaa.Item,
     Network.LambNyaa.Filters,
