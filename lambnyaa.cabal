@@ -23,7 +23,7 @@ library
     Network.LambNyaa.Parser,
     Network.LambNyaa.Database,
     Network.LambNyaa.Source.Nyaa,
-    Network.LambNyaa.Source.RSS,
+    Network.LambNyaa.Source.Feed,
     Network.LambNyaa.Sink.Download,
     Network.LambNyaa.Sink.RSS
   other-modules:       

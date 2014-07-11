@@ -4,7 +4,7 @@ module Network.LambNyaa (
     module Network.LambNyaa.Config,
     module Network.LambNyaa.Source,
     module Network.LambNyaa.Source.Nyaa,
-    module Network.LambNyaa.Source.RSS,
+    module Network.LambNyaa.Source.Feed,
     module Network.LambNyaa.Sink.Download,
     module Network.LambNyaa.Sink.RSS,
     module Network.LambNyaa.Filters,
@@ -18,7 +18,7 @@ import Network.LambNyaa.Config hiding (Action, Sink, Source)
 import Network.LambNyaa.Types
 import Network.LambNyaa.Source
 import Network.LambNyaa.Source.Nyaa
-import Network.LambNyaa.Source.RSS
+import Network.LambNyaa.Source.Feed
 import Network.LambNyaa.Sink
 import Network.LambNyaa.Sink.Download
 import Network.LambNyaa.Sink.RSS

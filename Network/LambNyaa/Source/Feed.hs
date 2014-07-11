@@ -3,7 +3,9 @@
 --   The itmName, itmURL and itmDescription fields are filled from the
 --   corresponding RSS fields.
 --   The itmTags field is left empty.
-module Network.LambNyaa.Source.RSS (rssFeed, rssFeed') where
+--
+--   TODO: support for other feed formats.
+module Network.LambNyaa.Source.Feed (rssFeed, rssFeed') where
 import Network.LambNyaa.Types
 import Network.LambNyaa.Source
 import Text.RSS.Syntax
