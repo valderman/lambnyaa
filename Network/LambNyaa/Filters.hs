@@ -65,7 +65,7 @@ hasPrefix p i = p `isPrefixOf` map toLower (itmName i)
 
 -- | True for all Items where the title ends in " - <number>". Underscores are
 --   interpreted as spaces.
---   TODO: add SxEy convention to this predicate.
+--   TODO: add SxEy and 01v2 conventions to this predicate.
 isEpisode :: Item -> Bool
 isEpisode i =
   case reverse $ words $ map (\c -> if c == '_' then ' ' else c) $ itmName i of
