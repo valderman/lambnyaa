@@ -62,3 +62,7 @@ a <|> b = \i -> a i || b i
 -- | Conjunction for predicates.
 (<&>) :: (Item -> Bool) -> (Item -> Bool) -> Item -> Bool
 a <&> b = \i -> a i && b i
+
+-- | Negation for predicates.
+not_ :: (Item -> Bool) -> Item -> Bool
+not_ = fmap not

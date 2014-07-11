@@ -6,7 +6,7 @@ import Network.Download
 import System.FilePath
 import qualified Data.ByteString as BS
 
--- | Download a file into <directory>/<item name>.<extension>
+-- | Download a file into <given directory>/<item name>.<given extension>
 download :: FilePath -> String -> Sink
 download dir ext = download' $ \item ->
   dir </> sanitize (itmName item) <.> ext
