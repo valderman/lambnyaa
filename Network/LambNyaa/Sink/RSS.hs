@@ -13,9 +13,13 @@ import Text.RSS.Import
 import Text.RSS.Export
 import Text.XML.Light
 
+-- | Default title for RSS feeds.
+defTitle :: String
+defTitle = "LambNyaa RSS feed"
+
 -- | Write the RSS feed to a file, overwriting the file if it already exists.
 writeRSS :: FilePath -> Sink
-writeRSS = writeRSS' "" "" ""
+writeRSS = writeRSS' defTitle "" ""
 
 -- | @writeRSS@ but with title, description and URL.
 writeRSS' :: String -> String -> URL -> FilePath -> Sink
@@ -25,7 +29,7 @@ writeRSS' title desc url f =
 -- | Prepend the RSS feed to an existing file. Acts as @writeRSS@ if the file
 --   does not exist or is not a valid RSS feed.
 updateRSS :: FilePath -> Sink
-updateRSS = updateRSS' "" "" ""
+updateRSS = updateRSS' defTitle "" ""
 
 -- | @updateRSS@ but with title, description and URL.
 updateRSS' :: String -> String -> URL -> FilePath -> Sink
@@ -55,7 +59,7 @@ updateRSS' title desc url f =
 -- | Sink which converts all Items into an RSS feed and then passes that feed
 --   to a user-supplied action.
 withRSS :: (RSS -> IO ()) -> Sink
-withRSS = withRSS' "" "" ""
+withRSS = withRSS' defTitle "" ""
 
 -- | Like @withRSS@, but with a title, description and URL for the feed.
 withRSS' :: String -> String -> URL -> (RSS -> IO ()) -> Sink
