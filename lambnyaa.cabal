@@ -39,7 +39,7 @@ library
     PatternGuards,
     FlexibleInstances
   build-depends:
-    base >=4.6 && <5,
+    base >=4.5 && <5,
     data-default >=0.5,
     download >=0.3,
     filepath >=1.3,
