@@ -15,6 +15,12 @@ import Control.Concurrent
 import Control.Monad
 import Data.IORef
 
+-- | Replacement for atomicModifyIORef' since it doesn't exist with GHC < 7.6.
+modifyRef :: IORef a -> (a -> (a, b)) -> IO b
+modifyRef r f = do
+  x <- atomicModifyIORef r $ \x -> let (a, b) = f x in (a, a `seq` b)
+  x `seq` return x
+
 -- | Unique handle to a registered log handler.
 newtype LogHandlerName = LogHandlerName Int deriving (Eq)
 
@@ -46,20 +52,20 @@ instance MonadLog IO where
     newLogItem lvl src tags msg >>= writeChan logChan
 
 newName :: IO LogHandlerName
-newName = atomicModifyIORef' handles (\n -> (n+1, LogHandlerName n))
+newName = modifyRef handles (\n -> (n+1, LogHandlerName n))
 
 -- | Register an IO log handler.
 addLogHandler :: LogHandler -> IO LogHandlerName
 addLogHandler initHandler = do
   n <- newName
   (logF, closeF) <- initHandler
-  atomicModifyIORef' loggers (\ls -> ((n, (logF, closeF)):ls, n))
+  modifyRef loggers (\ls -> ((n, (logF, closeF)):ls, n))
 
 -- | Unregister an IO logger. Unregistering a non-registered logger is a
 --   no-op.
 removeLogHandler :: LogHandlerName -> IO ()
 removeLogHandler h = do
-  ml <- atomicModifyIORef' loggers (\ls -> (delItem h ls, lookup h ls))
+  ml <- modifyRef loggers (\ls -> (delItem h ls, lookup h ls))
   maybe (return ()) snd ml
 
 delItem :: Eq a => a -> [(a, b)] -> [(a, b)]
@@ -73,7 +79,7 @@ delItem i = go
 -- | Unregister all IO loggers.
 clearLogHandlers :: IO ()
 clearLogHandlers = do
-  ls <- atomicModifyIORef' loggers (\ls -> ([], ls))
+  ls <- modifyRef loggers (\ls -> ([], ls))
   mapM_ (snd . snd) ls
 
 -- | Unregister all previously registered loggers and replace them with a new
