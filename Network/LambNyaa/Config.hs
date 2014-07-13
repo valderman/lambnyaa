@@ -2,7 +2,7 @@ module Network.LambNyaa.Config (
     Config, TimeUnit (..), Schedule (..),
     Action (..), Sink (..), Filter,
     LogHandler, LogLevel,
-    cfgSources, cfgFilters, cfgSchedule, cfgDatabase, cfgLogHandler,
+    cfgSources, cfgFilters, cfgSchedule, cfgDatabase, cfgLogHandlers,
     cfgLogLevel, cfgCatchSignals,
     def
   ) where
@@ -24,21 +24,21 @@ data Schedule = Once | Every Int TimeUnit
 
 -- | LambNyaa configuration.
 data Config = Config {
-    cfgSources      :: [Source],   -- ^ Sources to fetch items from.
-                                   --   Default: []
-    cfgFilters      :: [Filter],   -- ^ Filters to be applied to each Item.
-                                   --   Default: []
-    cfgSchedule     :: Schedule,   -- ^ How often should runs recur, if at all?
-                                   --   Default: Once
-    cfgDatabase     :: FilePath,   -- ^ Which SQLite database file should be
-                                   --   used for persistent data?
-                                   --   Default: ~/.lambnyaa/database.sqlite
-    cfgLogHandler   :: LogHandler, -- ^ How should data be logged?
-                                   --   Default: logToStderr
-    cfgLogLevel     :: LogLevel,   -- ^ How much data should be logged?
-                                   --   Default: Info
-    cfgCatchSignals :: Bool        -- ^ Do a clean exit on SIGINT or SIGTERM?
-                                   --   Default: True
+    cfgSources      :: [Source],    -- ^ Sources to fetch items from.
+                                    --   Default: []
+    cfgFilters      :: [Filter],    -- ^ Filters to be applied to each Item.
+                                    --   Default: []
+    cfgSchedule     :: Schedule,    -- ^ How often should runs recur, if at all?
+                                    --   Default: Once
+    cfgDatabase     :: FilePath,    -- ^ Which SQLite database file should be
+                                    --   used for persistent data?
+                                    --   Default: ~/.lambnyaa/database.sqlite
+    cfgLogHandlers  :: [LogHandler],-- ^ How should data be logged?
+                                    --   Default: logToStderr
+    cfgLogLevel     :: LogLevel,    -- ^ How much data should be logged?
+                                    --   Default: Info
+    cfgCatchSignals :: Bool         -- ^ Do a clean exit on SIGINT or SIGTERM?
+                                    --   Default: True
   }
 
 instance Default Config where
@@ -47,7 +47,7 @@ instance Default Config where
       cfgFilters      = [],
       cfgSchedule     = Once,
       cfgDatabase     = defaultDB,
-      cfgLogHandler   = logToStderr,
+      cfgLogHandlers  = [logToStderr],
       cfgLogLevel     = Info,
       cfgCatchSignals = True
     }

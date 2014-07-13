@@ -35,7 +35,7 @@ die mainthread = do
 -- | Execute a pipeline according to schedule.
 schedule :: Config -> IO ()
 schedule cfg = do
-  setLogHandlers [cfgLogHandler cfg]
+  setLogHandlers $ cfgLogHandlers cfg
   setLogLevel $ cfgLogLevel cfg
   tid <- myThreadId
   when (cfgCatchSignals cfg) $ do
