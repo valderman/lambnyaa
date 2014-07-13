@@ -1,12 +1,14 @@
 module Network.LambNyaa.Config (
     Config, TimeUnit (..), Schedule (..),
     Action (..), Sink (..), Filter,
-    cfgSources, cfgFilters, cfgSchedule, cfgDatabase,
+    Logger, LogLevel,
+    cfgSources, cfgFilters, cfgSchedule, cfgDatabase, cfgLogger, cfgLogLevel,
     def
   ) where
 import Data.Default
 import {-# SOURCE #-} Network.LambNyaa.Types
 import Network.LambNyaa.Item
+import Network.LambNyaa.Log
 import System.IO.Unsafe
 import System.Directory
 import System.FilePath
@@ -22,10 +24,18 @@ data Schedule = Once | Every Int TimeUnit
 -- | LambNyaa configuration.
 data Config = Config {
     cfgSources   :: [Source], -- ^ Sources to fetch items from.
+                              --   Default: []
     cfgFilters   :: [Filter], -- ^ Filters to be applied to each Item.
+                              --   Default: []
     cfgSchedule  :: Schedule, -- ^ How often should runs recur, if at all?
-    cfgDatabase  :: FilePath  -- ^ Which SQLite database file should be used
+                              --   Default: Once
+    cfgDatabase  :: FilePath, -- ^ Which SQLite database file should be used
                               --   for persistent data?
+                              --   Default: ~/.lambnyaa/database.sqlite
+    cfgLogger    :: Logger,   -- ^ How should data be logged?
+                              --   Default: logToStderr
+    cfgLogLevel  :: LogLevel  -- ^ How much data should be logged?
+                              --   Default: Info
   }
 
 instance Default Config where
@@ -33,7 +43,9 @@ instance Default Config where
       cfgSources   = [],
       cfgFilters   = [],
       cfgSchedule  = Once,
-      cfgDatabase  = defaultDB
+      cfgDatabase  = defaultDB,
+      cfgLogger    = logToStderr,
+      cfgLogLevel  = Info
     }
 
 {-# NOINLINE defaultDB #-}

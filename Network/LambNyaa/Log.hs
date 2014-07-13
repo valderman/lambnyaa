@@ -1,5 +1,5 @@
 module Network.LambNyaa.Log (
-    LogItem, Logger,
+    LogItem, Logger, LogLevel (..),
     MonadLog (..),
     liSource, liLevel, liTags, liTimestamp, liMessage,
     newLogItem, unsafeNewLogItem,

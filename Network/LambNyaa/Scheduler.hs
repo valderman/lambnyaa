@@ -10,6 +10,8 @@ import Network.LambNyaa.Config
 import Network.LambNyaa.Types
 import Network.LambNyaa.Sink
 import Network.LambNyaa.Database
+import Network.LambNyaa.Log
+import Network.LambNyaa.Log.IO
 
 -- | Pause thread for a number of seconds.
 delaySecs :: Int -> IO ()
@@ -22,16 +24,29 @@ delaySecs n = do
 -- | Execute a pipeline according to schedule.
 schedule :: Config -> IO ()
 schedule cfg = do
+  setLoggers [cfgLogger cfg]
+  setLogLevel $ cfgLogLevel cfg
   case cfgSchedule cfg of
-    Once              -> execute cfg
-    (Every n Seconds) -> every n $ execute cfg
-    (Every n Minutes) -> every (n*60) $ execute cfg
-    (Every n Hours)   -> every (n*60*60) $ execute cfg
-    (Every n Days)    -> every (n*24*60*60) $ execute cfg
+    Once              -> do
+      info "Starting oneshot run..."
+      execute cfg
+      info "Run completed!"
+    (Every n Seconds) -> every n (show n ++ " seconds") $ execute cfg
+    (Every n Minutes) -> every (n*60) (show n ++ " minutes") $ execute cfg
+    (Every n Hours)   -> every (n*60*60) (show n ++ " hours") $ execute cfg
+    (Every n Days)    -> every (n*24*60*60) (show n ++ " days") $ execute cfg
 
 -- | Perform an action every n seconds.
-every :: Int -> IO () -> IO ()
-every secs m = go where go = m >> delaySecs secs >> go
+every :: Int -> String -> IO () -> IO ()
+every secs sched act = do
+    info $ "Starting scheduling; runs are scheduled for every " ++ sched
+    go
+  where
+    go = do
+      info "Starting new run..."
+      act
+      info "Run completed!"
+      delaySecs secs >> go
 
 -- | Execute a pipeline, from Source to Sink.
 execute :: Config -> IO ()

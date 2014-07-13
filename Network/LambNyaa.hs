@@ -25,7 +25,7 @@ import Network.LambNyaa.Sink.Download
 import Network.LambNyaa.Sink.RSS
 import Network.LambNyaa.Scheduler
 import Network.LambNyaa.Filters
-import Network.LambNyaa.Log
+import Network.LambNyaa.Log hiding (newLogItem, unsafeNewLogItem)
 import Network.LambNyaa.Log.IO
 
 -- TODO:

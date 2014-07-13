@@ -8,11 +8,14 @@ import Data.Maybe (catMaybes)
 import Data.Monoid
 import Data.Char (isSpace)
 import Control.Applicative
+import Control.Monad
 import Network.Download
 import Text.HTML.TagSoup
 import Network.LambNyaa.Types
 import Network.LambNyaa.Parser
 import Network.LambNyaa.Source
+import Network.LambNyaa.Log
+import Network.LambNyaa.Log.IO
 
 -- | Create an Item source from a Nyaa search. This relies on parsing the HTML
 --   of the Nyaa search page, so it'll break any time their search page gets an
@@ -21,8 +24,13 @@ nyaaSearch :: String -> Source
 nyaaSearch s = listIO $ do
   ets <- openAsTags $ "http://www.nyaa.se/?page=search&term=" ++ encode s
   case ets of
-    Right es -> return $ getItems es
-    _        -> return []
+    Right es -> do
+      let is = getItems es
+      when (null is) . warn $ "No search results for '" ++ s ++ "'!"
+      return is
+    _        -> do
+      err $ "Couldn't parse search results for '" ++ s ++ "'!"
+      return []
 
 -- | Encode a string into a format suitable for searching Nyaa.
 --   TODO: will currently barf on /, # and other web-special chars.

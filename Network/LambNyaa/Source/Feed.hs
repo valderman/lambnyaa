@@ -8,9 +8,12 @@
 module Network.LambNyaa.Source.Feed (rssFeed, rssFeed') where
 import Network.LambNyaa.Types
 import Network.LambNyaa.Source
+import Network.LambNyaa.Log
+import Network.LambNyaa.Log.IO
 import Text.RSS.Syntax
 import Text.Feed.Types hiding (Item)
 import Network.Download
+import Control.Monad
 
 -- | Create a Source from an RSS feed. The itmSource field of Items originating
 --   from this Source will contain the URL of the feed.
@@ -23,8 +26,13 @@ rssFeed' :: String -> URL -> Source
 rssFeed' src url = listIO $ do
   ef <- openAsFeed url
   case ef of
-    Right (RSSFeed rss) -> return $ getItems src (rssChannel rss)
-    _                   -> return []
+    Right (RSSFeed rss) -> do
+      let is = getItems src (rssChannel rss)
+      when (null is) . warn $ "No RSS items from feed " ++ url ++ "!"
+      return is
+    _ -> do
+      err $ "Unable to parse RSS feed from " ++ url ++ "!"
+      return []
 
 getItems :: String -> RSSChannel -> [Item]
 getItems src = map (getItem src) . rssItems

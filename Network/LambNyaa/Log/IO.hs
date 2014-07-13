@@ -2,9 +2,10 @@
 --   Note that this module only pertains to IO-based loggers.
 --   addLogger, removeLogger, etc. will not affect, for instance, Writer-based
 --   MonadLog instances.
+--   By default, the log level is set to Info.
 module Network.LambNyaa.Log.IO (
     LoggerHandle,
-    addLogger, removeLogger, clearLoggers
+    addLogger, removeLogger, clearLoggers, setLoggers, getLogLevel, setLogLevel
   ) where
 import Network.LambNyaa.Log
 import System.IO.Unsafe
@@ -23,13 +24,19 @@ logChan = unsafePerformIO $ newChan
 handles :: IORef Int
 handles = unsafePerformIO $ newIORef 0
 
+{-# NOINLINE level #-}
+level :: IORef LogLevel
+level = unsafePerformIO $ newIORef Info
+
 {-# NOINLINE loggers #-}
 loggers :: IORef [(LoggerHandle, Logger)]
 loggers = unsafePerformIO $ do
   forkIO $ do
     is <- getChanContents logChan
     forM_ is $ \i -> do
-      readIORef loggers >>= mapM_ (\(_, h) -> h i)
+      ll <- getLogLevel
+      when (liLevel i >= ll) $ do
+        readIORef loggers >>= mapM_ (\(_, h) -> h i)
   newIORef []
 
 instance MonadLog IO where
@@ -62,3 +69,18 @@ delItem i = go
 -- | Unregister all IO loggers.
 clearLoggers :: IO ()
 clearLoggers = writeIORef loggers []
+
+-- | Unregister all previously registered loggers and replace them with a new
+--   list.
+setLoggers :: [Logger] -> IO [LoggerHandle]
+setLoggers ls = do
+  clearLoggers
+  mapM addLogger ls
+
+-- | Set the logging level for all IO loggers.
+setLogLevel :: LogLevel -> IO ()
+setLogLevel = writeIORef level
+
+-- | Inspect the logging level for all IO loggers.
+getLogLevel :: IO LogLevel
+getLogLevel = readIORef level
