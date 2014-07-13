@@ -4,7 +4,7 @@ module Network.LambNyaa.Log.Core (
     MonadLog (..), logMessage,
     liSource, liLevel, liTags, liTimestamp, liMessage,
     newLogItem, unsafeNewLogItem, formatLogItem,
-    debug, info, warn, err,
+    debug, info, note, warn, err,
     logToStdout, logToStderr, logToFile, logToNewFile
   ) where
 import Data.Time
@@ -15,7 +15,7 @@ import System.IO
 import Control.Concurrent
 
 -- | Urgency of a log item.
-data LogLevel = Debug | Info | Warning | Error
+data LogLevel = Debug | Info | Notice | Warning | Error
   deriving (Show, Read, Eq, Ord)
 
 -- | A log handler is an IO action which performs any initialization needed
@@ -44,9 +44,10 @@ class Monad m => MonadLog m where
 logMessage :: MonadLog m => LogLevel -> String -> String -> m ()
 logMessage = logWithTags []
 
-debug, info, warn, err :: MonadLog m => String -> String -> m ()
+debug, info, note, warn, err :: MonadLog m => String -> String -> m ()
 debug = logMessage Debug
 info  = logMessage Info
+note  = logMessage Notice
 warn  = logMessage Warning
 err   = logMessage Error
 
