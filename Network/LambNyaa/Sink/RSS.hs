@@ -45,7 +45,7 @@ updateRSS' title desc url f =
         length txt `seq` return txt
       case parseXMLDoc txt of
         Just e | Just oldrss <- elementToRSS e -> do
-          writeFile f $ ppTopElement $ xmlRSS $ oldrss `append` rss
+          writeFile f $ ppTopElement $ xmlRSS $ rss `append` oldrss
         _ -> do
           writeFile f $ ppTopElement $ xmlRSS rss
 
