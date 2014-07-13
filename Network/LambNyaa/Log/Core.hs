@@ -86,11 +86,11 @@ formatLogItem li =
 
 -- | Print log to stdout.
 logToStdout :: LogHandler
-logToStdout = return (hPutStrLn stdout . formatLogItem, return ())
+logToStdout = return (hPutStrLn stdout . formatLogItem, hFlush stdout)
 
 -- | Print log to stderr.
 logToStderr :: LogHandler
-logToStderr = return (hPutStrLn stderr . formatLogItem, return ())
+logToStderr = return (hPutStrLn stderr . formatLogItem, hFlush stderr)
 
 fileLogger :: IOMode -> FilePath -> LogHandler
 fileLogger mode file = do

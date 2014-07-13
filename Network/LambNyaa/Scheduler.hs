@@ -1,8 +1,8 @@
 {-# LANGUAGE PatternGuards #-}
 -- | Main executive for LambNyaa.
 module Network.LambNyaa.Scheduler (schedule) where
-import Control.Concurrent (threadDelay)
-import Control.Monad (forM_)
+import Control.Concurrent
+import Control.Monad
 import Data.Hashable
 import Data.List
 import qualified Database.SQLite.Simple as DB
@@ -11,6 +11,8 @@ import Network.LambNyaa.Types
 import Network.LambNyaa.Sink
 import Network.LambNyaa.Database
 import Network.LambNyaa.Log
+import System.Posix.Signals
+import System.Exit
 
 info' = info "Scheduler"
 
@@ -22,11 +24,24 @@ delaySecs n = do
   where
     (ksecs, secs) = n `divMod` 1000
 
+-- | Perform a clean exit on SIGTERM or SIGINT.
+die :: ThreadId -> IO ()
+die mainthread = do
+  info' $ "Interrupted; performing cleanup and exiting..."
+  delaySecs 2
+  clearLogHandlers
+  throwTo mainthread ExitSuccess
+
 -- | Execute a pipeline according to schedule.
 schedule :: Config -> IO ()
 schedule cfg = do
   setLogHandlers [cfgLogHandler cfg]
   setLogLevel $ cfgLogLevel cfg
+  tid <- myThreadId
+  when (cfgCatchSignals cfg) $ do
+    installHandler keyboardSignal (Catch $ die tid) (Just fullSignalSet)
+    installHandler softwareTermination (Catch $ die tid) (Just fullSignalSet)
+    return ()
   case cfgSchedule cfg of
     Once              -> do
       info' "Starting oneshot run..."

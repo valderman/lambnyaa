@@ -3,7 +3,7 @@ module Network.LambNyaa.Config (
     Action (..), Sink (..), Filter,
     LogHandler, LogLevel,
     cfgSources, cfgFilters, cfgSchedule, cfgDatabase, cfgLogHandler,
-    cfgLogLevel,
+    cfgLogLevel, cfgCatchSignals,
     def
   ) where
 import Data.Default
@@ -24,29 +24,32 @@ data Schedule = Once | Every Int TimeUnit
 
 -- | LambNyaa configuration.
 data Config = Config {
-    cfgSources    :: [Source],   -- ^ Sources to fetch items from.
-                                 --   Default: []
-    cfgFilters    :: [Filter],   -- ^ Filters to be applied to each Item.
-                                 --   Default: []
-    cfgSchedule   :: Schedule,   -- ^ How often should runs recur, if at all?
-                                 --   Default: Once
-    cfgDatabase   :: FilePath,   -- ^ Which SQLite database file should be used
-                                 --   for persistent data?
-                                 --   Default: ~/.lambnyaa/database.sqlite
-    cfgLogHandler :: LogHandler, -- ^ How should data be logged?
-                                 --   Default: logToStderr
-    cfgLogLevel   :: LogLevel    -- ^ How much data should be logged?
-                                 --   Default: Info
+    cfgSources      :: [Source],   -- ^ Sources to fetch items from.
+                                   --   Default: []
+    cfgFilters      :: [Filter],   -- ^ Filters to be applied to each Item.
+                                   --   Default: []
+    cfgSchedule     :: Schedule,   -- ^ How often should runs recur, if at all?
+                                   --   Default: Once
+    cfgDatabase     :: FilePath,   -- ^ Which SQLite database file should be
+                                   --   used for persistent data?
+                                   --   Default: ~/.lambnyaa/database.sqlite
+    cfgLogHandler   :: LogHandler, -- ^ How should data be logged?
+                                   --   Default: logToStderr
+    cfgLogLevel     :: LogLevel,   -- ^ How much data should be logged?
+                                   --   Default: Info
+    cfgCatchSignals :: Bool        -- ^ Do a clean exit on SIGINT or SIGTERM?
+                                   --   Default: True
   }
 
 instance Default Config where
   def = Config {
-      cfgSources    = [],
-      cfgFilters    = [],
-      cfgSchedule   = Once,
-      cfgDatabase   = defaultDB,
-      cfgLogHandler = logToStderr,
-      cfgLogLevel   = Info
+      cfgSources      = [],
+      cfgFilters      = [],
+      cfgSchedule     = Once,
+      cfgDatabase     = defaultDB,
+      cfgLogHandler   = logToStderr,
+      cfgLogLevel     = Info,
+      cfgCatchSignals = True
     }
 
 {-# NOINLINE defaultDB #-}
