@@ -15,6 +15,7 @@ import System.Posix.Signals
 import System.Exit
 
 info' = info "Scheduler"
+note' = note "Scheduler"
 
 -- | Pause thread for a number of seconds.
 delaySecs :: Int -> IO ()
@@ -55,7 +56,7 @@ schedule cfg = do
 -- | Perform an action every n seconds.
 every :: Int -> String -> IO (Int, Int) -> IO ()
 every secs sched act = do
-    info' $ "Starting scheduling; runs are scheduled for every " ++ sched
+    note' $ "Starting scheduling; runs are scheduled for every " ++ sched
     go
   where
     go = do
