@@ -1,11 +1,13 @@
 -- | IO MonadLogger instance and associated utilities.
 --   Note that this module only pertains to IO-based loggers.
---   addLogger, removeLogger, etc. will not affect, for instance, Writer-based
+--   addLogHandler, etc. will not affect, for instance, Writer-based
 --   MonadLog instances.
 --   By default, the log level is set to Info.
 module Network.LambNyaa.Log.IO (
-    LoggerHandle,
-    addLogger, removeLogger, clearLoggers, setLoggers, getLogLevel, setLogLevel
+    LogHandlerName,
+    addLogHandler, removeLogHandler,
+    clearLogHandlers, setLogHandlers,
+    getLogLevel, setLogLevel
   ) where
 import Network.LambNyaa.Log.Core
 import System.IO.Unsafe
@@ -13,8 +15,8 @@ import Control.Concurrent
 import Control.Monad
 import Data.IORef
 
--- | Unique handle to a registered logger.
-newtype LoggerHandle = LoggerHandle Int deriving (Eq)
+-- | Unique handle to a registered log handler.
+newtype LogHandlerName = LogHandlerName Int deriving (Eq)
 
 {-# NOINLINE logChan #-}
 logChan :: Chan LogItem
@@ -29,7 +31,7 @@ level :: IORef LogLevel
 level = unsafePerformIO $ newIORef Info
 
 {-# NOINLINE loggers #-}
-loggers :: IORef [(LoggerHandle, Logger)]
+loggers :: IORef [(LogHandlerName, LogHandler)]
 loggers = unsafePerformIO $ do
   forkIO $ do
     is <- getChanContents logChan
@@ -40,23 +42,23 @@ loggers = unsafePerformIO $ do
   newIORef []
 
 instance MonadLog IO where
-  logMessage' src tags lvl msg = do
+  logWithTags tags lvl src msg = do
     li <- newLogItem lvl src tags msg
     readIORef loggers >>= mapM_ (\(_, h) -> h li)
 
-newHandle :: IO LoggerHandle
-newHandle = atomicModifyIORef' handles (\n -> (n+1, LoggerHandle n))
+newName :: IO LogHandlerName
+newName = atomicModifyIORef' handles (\n -> (n+1, LogHandlerName n))
 
--- | Register an IO logger.
-addLogger :: Logger -> IO LoggerHandle
-addLogger logger = do
-  h <- newHandle
+-- | Register an IO log handler.
+addLogHandler :: LogHandler -> IO LogHandlerName
+addLogHandler logger = do
+  h <- newName
   atomicModifyIORef' loggers (\ls -> ((h, logger):ls, h))
 
 -- | Unregister an IO logger. Unregistering a non-registered logger is a
 --   no-op.
-removeLogger :: LoggerHandle -> IO ()
-removeLogger h = atomicModifyIORef' loggers (\ls -> (delItem h ls, ()))
+removeLogHandler :: LogHandlerName -> IO ()
+removeLogHandler h = atomicModifyIORef' loggers (\ls -> (delItem h ls, ()))
 
 delItem :: Eq a => a -> [(a, b)] -> [(a, b)]
 delItem i = go
@@ -67,15 +69,15 @@ delItem i = go
     go _          = []
 
 -- | Unregister all IO loggers.
-clearLoggers :: IO ()
-clearLoggers = writeIORef loggers []
+clearLogHandlers :: IO ()
+clearLogHandlers = writeIORef loggers []
 
 -- | Unregister all previously registered loggers and replace them with a new
 --   list.
-setLoggers :: [Logger] -> IO [LoggerHandle]
-setLoggers ls = do
-  clearLoggers
-  mapM addLogger ls
+setLogHandlers :: [LogHandler] -> IO [LogHandlerName]
+setLogHandlers ls = do
+  clearLogHandlers
+  mapM addLogHandler ls
 
 -- | Set the logging level for all IO loggers.
 setLogLevel :: LogLevel -> IO ()

@@ -1,6 +1,6 @@
 module Network.LambNyaa.Log.Core (
-    LogItem, Logger, LogLevel (..),
-    MonadLog (..),
+    LogItem, LogHandler, LogLevel (..),
+    MonadLog (..), logMessage,
     liSource, liLevel, liTags, liTimestamp, liMessage,
     newLogItem, unsafeNewLogItem,
     debug, info, warn, err,
@@ -16,29 +16,30 @@ import System.IO
 data LogLevel = Debug | Info | Warning | Error
   deriving (Show, Read, Eq, Ord)
 
+type LogHandler = LogItem -> IO ()
+
+-- | A log item. Contains a log message and assorted information about its
+--   origins.
 data LogItem = LogItem {
-    liSource    :: String,
-    liLevel     :: LogLevel,
-    liTags      :: [String],
-    liTimestamp :: UTCTime,
-    liMessage   :: String
+    liSource    :: String,   -- ^ The source of the log item, as given to
+                             --   @logMessage@.
+    liLevel     :: LogLevel, -- ^ Urgency of the log item.
+    liTags      :: [String], -- ^ Any tags associated by the log item.
+    liTimestamp :: UTCTime,  -- ^ Time when message was logged.
+    liMessage   :: String    -- ^ The message itself.
   }
 
--- | Any monad capable of keeping a log. Minimal definition: logMessage'.
+-- | Any monad capable of keeping a log.
 class Monad m => MonadLog m where
-  -- | Log a message using the default source for the monad, and no tags.
-  logMessage  :: LogLevel -> String -> m ()
-  logMessage = logWithTags []
-
-  -- | Log a message using a set of tags. This is primarily useful to pass
+  -- | Log a message using a list of tags. This is primarily useful to pass
   --   extra information about a log item to a custom logger.
-  logWithTags :: [String] -> LogLevel -> String -> m ()
-  logWithTags = logMessage' ""
+  logWithTags :: [String] -> LogLevel -> String -> String -> m ()
 
-  -- | Log a message with a custom source and tags.
-  logMessage' :: String -> [String] -> LogLevel -> String -> m ()
+-- | Log a message without any tags.
+logMessage :: MonadLog m => LogLevel -> String -> String -> m ()
+logMessage = logWithTags []
 
-debug, info, warn, err :: MonadLog m => String -> m ()
+debug, info, warn, err :: MonadLog m => String -> String -> m ()
 debug = logMessage Debug
 info  = logMessage Info
 warn  = logMessage Warning
@@ -65,8 +66,6 @@ unsafeNewLogItem :: LogLevel -> String -> [String] -> String -> LogItem
 unsafeNewLogItem level src tags msg =
   unsafePerformIO $ newLogItem level src tags msg
 
-type Logger = LogItem -> IO ()
-
 -- | Format a log item as (time) [level] [source] [tag1, .. tagN] message
 formatLogItem :: LogItem -> String
 formatLogItem li =
@@ -81,9 +80,9 @@ formatLogItem li =
             liMessage li]
 
 -- | Print log to stdout.
-logToStdout :: Logger
+logToStdout :: LogHandler
 logToStdout = hPutStrLn stdout . formatLogItem
 
 -- | Print log to stderr.
-logToStderr :: Logger
+logToStderr :: LogHandler
 logToStderr = hPutStrLn stderr . formatLogItem

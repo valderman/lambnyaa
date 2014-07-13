@@ -16,6 +16,9 @@ import Network.LambNyaa.Parser
 import Network.LambNyaa.Source
 import Network.LambNyaa.Log
 
+err'  = err "Source.Nyaa"
+warn' = warn "Source.Nyaa"
+
 -- | Create an Item source from a Nyaa search. This relies on parsing the HTML
 --   of the Nyaa search page, so it'll break any time their search page gets an
 --   overhaul.
@@ -25,10 +28,10 @@ nyaaSearch s = listIO $ do
   case ets of
     Right es -> do
       let is = getItems es
-      when (null is) . warn $ "No search results for '" ++ s ++ "'!"
+      when (null is) . warn' $ "No search results for '" ++ s ++ "'!"
       return is
     _        -> do
-      err $ "Couldn't parse search results for '" ++ s ++ "'!"
+      err' $ "Couldn't parse search results for '" ++ s ++ "'!"
       return []
 
 -- | Encode a string into a format suitable for searching Nyaa.

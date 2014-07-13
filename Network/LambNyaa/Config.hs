@@ -1,8 +1,9 @@
 module Network.LambNyaa.Config (
     Config, TimeUnit (..), Schedule (..),
     Action (..), Sink (..), Filter,
-    Logger, LogLevel,
-    cfgSources, cfgFilters, cfgSchedule, cfgDatabase, cfgLogger, cfgLogLevel,
+    LogHandler, LogLevel,
+    cfgSources, cfgFilters, cfgSchedule, cfgDatabase, cfgLogHandler,
+    cfgLogLevel,
     def
   ) where
 import Data.Default
@@ -23,29 +24,29 @@ data Schedule = Once | Every Int TimeUnit
 
 -- | LambNyaa configuration.
 data Config = Config {
-    cfgSources   :: [Source], -- ^ Sources to fetch items from.
-                              --   Default: []
-    cfgFilters   :: [Filter], -- ^ Filters to be applied to each Item.
-                              --   Default: []
-    cfgSchedule  :: Schedule, -- ^ How often should runs recur, if at all?
-                              --   Default: Once
-    cfgDatabase  :: FilePath, -- ^ Which SQLite database file should be used
-                              --   for persistent data?
-                              --   Default: ~/.lambnyaa/database.sqlite
-    cfgLogger    :: Logger,   -- ^ How should data be logged?
-                              --   Default: logToStderr
-    cfgLogLevel  :: LogLevel  -- ^ How much data should be logged?
-                              --   Default: Info
+    cfgSources    :: [Source],   -- ^ Sources to fetch items from.
+                                 --   Default: []
+    cfgFilters    :: [Filter],   -- ^ Filters to be applied to each Item.
+                                 --   Default: []
+    cfgSchedule   :: Schedule,   -- ^ How often should runs recur, if at all?
+                                 --   Default: Once
+    cfgDatabase   :: FilePath,   -- ^ Which SQLite database file should be used
+                                 --   for persistent data?
+                                 --   Default: ~/.lambnyaa/database.sqlite
+    cfgLogHandler :: LogHandler, -- ^ How should data be logged?
+                                 --   Default: logToStderr
+    cfgLogLevel   :: LogLevel    -- ^ How much data should be logged?
+                                 --   Default: Info
   }
 
 instance Default Config where
   def = Config {
-      cfgSources   = [],
-      cfgFilters   = [],
-      cfgSchedule  = Once,
-      cfgDatabase  = defaultDB,
-      cfgLogger    = logToStderr,
-      cfgLogLevel  = Info
+      cfgSources    = [],
+      cfgFilters    = [],
+      cfgSchedule   = Once,
+      cfgDatabase   = defaultDB,
+      cfgLogHandler = logToStderr,
+      cfgLogLevel   = Info
     }
 
 {-# NOINLINE defaultDB #-}

@@ -14,6 +14,9 @@ import Text.Feed.Types hiding (Item)
 import Network.Download
 import Control.Monad
 
+warn' = warn "Source.Feed"
+err' = err "Source.Feed"
+
 -- | Create a Source from an RSS feed. The itmSource field of Items originating
 --   from this Source will contain the URL of the feed.
 rssFeed :: URL -> Source
@@ -27,10 +30,10 @@ rssFeed' src url = listIO $ do
   case ef of
     Right (RSSFeed rss) -> do
       let is = getItems src (rssChannel rss)
-      when (null is) . warn $ "No RSS items from feed " ++ url ++ "!"
+      when (null is) . warn' $ "No RSS items from feed " ++ url ++ "!"
       return is
     _ -> do
-      err $ "Unable to parse RSS feed from " ++ url ++ "!"
+      err' $ "Unable to parse RSS feed from " ++ url ++ "!"
       return []
 
 getItems :: String -> RSSChannel -> [Item]
