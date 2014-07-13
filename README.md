@@ -1,7 +1,7 @@
-LambdNyaa
+LambNyaa
 =========
 
-LambdNyaa is a content aggregator/processor library. It was designed to
+LambNyaa is a content aggregator/processor library. It was designed to
 facilitate automatic fetching and notification of new episodes from
 Nyaa Torrents, but can be used for pretty much any kind of content.
 
