@@ -1,22 +1,27 @@
+{-# LANGUAGE ExistentialQuantification #-}
 module Network.LambNyaa.Log.Core (
-    LogItem, LogHandler, LogLevel (..),
+    LogItem, LogHandler (..), LogLevel (..),
     MonadLog (..), logMessage,
     liSource, liLevel, liTags, liTimestamp, liMessage,
-    newLogItem, unsafeNewLogItem,
+    newLogItem, unsafeNewLogItem, formatLogItem,
     debug, info, warn, err,
-    logToStdout, logToStderr, formatLogItem
+    logToStdout, logToStderr, logToFile, logToNewFile
   ) where
 import Data.Time
 import Data.List
 import System.IO.Unsafe
 import System.Locale
 import System.IO
+import Control.Concurrent
 
 -- | Urgency of a log item.
 data LogLevel = Debug | Info | Warning | Error
   deriving (Show, Read, Eq, Ord)
 
-type LogHandler = LogItem -> IO ()
+-- | A log handler is an IO action which performs any initialization needed
+--   for the handler to work, and returns a pair of a logger function and a
+--   cleanup function. See @logToFile@ for more a usage example.
+type LogHandler = IO (LogItem -> IO (), IO ())
 
 -- | A log item. Contains a log message and assorted information about its
 --   origins.
@@ -81,8 +86,26 @@ formatLogItem li =
 
 -- | Print log to stdout.
 logToStdout :: LogHandler
-logToStdout = hPutStrLn stdout . formatLogItem
+logToStdout = return (hPutStrLn stdout . formatLogItem, return ())
 
 -- | Print log to stderr.
 logToStderr :: LogHandler
-logToStderr = hPutStrLn stderr . formatLogItem
+logToStderr = return (hPutStrLn stderr . formatLogItem, return ())
+
+fileLogger :: IOMode -> FilePath -> LogHandler
+fileLogger mode file = do
+  h <- openFile file mode
+  t <- forkIO $ forever (threadDelay 60000000 >> hFlush h)
+  return (hPutStrLn h . formatLogItem, killThread t >> hClose h)
+
+-- | Print log to a file. The log buffer is flushed once every minute.
+logToFile :: FilePath -> LogHandler
+logToFile = fileLogger AppendMode
+
+-- | Like @logToFile@, but overwrites the file's contents rather than appending
+--   to it.
+logToNewFile :: FilePath -> LogHandler
+logToNewFile = fileLogger WriteMode
+
+forever :: IO () -> IO ()
+forever m = m >> forever m

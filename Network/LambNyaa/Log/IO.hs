@@ -31,34 +31,36 @@ level :: IORef LogLevel
 level = unsafePerformIO $ newIORef Info
 
 {-# NOINLINE loggers #-}
-loggers :: IORef [(LogHandlerName, LogHandler)]
+loggers :: IORef [(LogHandlerName, (LogItem -> IO (), IO ()))]
 loggers = unsafePerformIO $ do
   forkIO $ do
     is <- getChanContents logChan
     forM_ is $ \i -> do
       ll <- getLogLevel
       when (liLevel i >= ll) $ do
-        readIORef loggers >>= mapM_ (\(_, h) -> h i)
+        readIORef loggers >>= mapM_ (\(_, h) -> fst h i)
   newIORef []
 
 instance MonadLog IO where
   logWithTags tags lvl src msg = do
-    li <- newLogItem lvl src tags msg
-    readIORef loggers >>= mapM_ (\(_, h) -> h li)
+    newLogItem lvl src tags msg >>= writeChan logChan
 
 newName :: IO LogHandlerName
 newName = atomicModifyIORef' handles (\n -> (n+1, LogHandlerName n))
 
 -- | Register an IO log handler.
 addLogHandler :: LogHandler -> IO LogHandlerName
-addLogHandler logger = do
-  h <- newName
-  atomicModifyIORef' loggers (\ls -> ((h, logger):ls, h))
+addLogHandler initHandler = do
+  n <- newName
+  (logF, closeF) <- initHandler
+  atomicModifyIORef' loggers (\ls -> ((n, (logF, closeF)):ls, n))
 
 -- | Unregister an IO logger. Unregistering a non-registered logger is a
 --   no-op.
 removeLogHandler :: LogHandlerName -> IO ()
-removeLogHandler h = atomicModifyIORef' loggers (\ls -> (delItem h ls, ()))
+removeLogHandler h = do
+  ml <- atomicModifyIORef' loggers (\ls -> (delItem h ls, lookup h ls))
+  maybe (return ()) snd ml
 
 delItem :: Eq a => a -> [(a, b)] -> [(a, b)]
 delItem i = go
@@ -70,7 +72,9 @@ delItem i = go
 
 -- | Unregister all IO loggers.
 clearLogHandlers :: IO ()
-clearLogHandlers = writeIORef loggers []
+clearLogHandlers = do
+  ls <- atomicModifyIORef' loggers (\ls -> ([], ls))
+  mapM_ (snd . snd) ls
 
 -- | Unregister all previously registered loggers and replace them with a new
 --   list.
