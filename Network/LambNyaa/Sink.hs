@@ -15,7 +15,7 @@ sinkCtr = unsafePerformIO $ newIORef 0
 {-# NOINLINE sink #-}
 sink :: (Config -> [Item] -> IO ()) -> Sink
 sink f = unsafePerformIO $ do
-  ctr <- atomicModifyIORef' sinkCtr (\ctr -> (ctr+1, ctr))
+  ctr <- modifyRef sinkCtr (\ctr -> (ctr+1, ctr))
   return $ Sink {
       sinkHandler = f,
       sinkID      = ctr
