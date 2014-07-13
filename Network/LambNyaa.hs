@@ -9,7 +9,7 @@ module Network.LambNyaa (
     module Network.LambNyaa.Sink.RSS,
     module Network.LambNyaa.Filters,
     module Network.LambNyaa.Scheduler,
-    module Network.LambNyaa.Log,
+    module Network.LambNyaa.Log.Core,
     URL, Item (..), Action, Sink, Source,
     sink, sink_, printItem, seen, unseen
   ) where
@@ -25,8 +25,8 @@ import Network.LambNyaa.Sink.Download
 import Network.LambNyaa.Sink.RSS
 import Network.LambNyaa.Scheduler
 import Network.LambNyaa.Filters
-import Network.LambNyaa.Log hiding (newLogItem, unsafeNewLogItem)
-import Network.LambNyaa.Log.IO
+import Network.LambNyaa.Log.Core hiding (newLogItem, unsafeNewLogItem)
+import Network.LambNyaa.Log.IO ()
 
 -- TODO:
 --   * Sinks: email

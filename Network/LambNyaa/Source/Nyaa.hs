@@ -15,7 +15,6 @@ import Network.LambNyaa.Types
 import Network.LambNyaa.Parser
 import Network.LambNyaa.Source
 import Network.LambNyaa.Log
-import Network.LambNyaa.Log.IO
 
 -- | Create an Item source from a Nyaa search. This relies on parsing the HTML
 --   of the Nyaa search page, so it'll break any time their search page gets an

@@ -9,7 +9,6 @@ module Network.LambNyaa.Source.Feed (rssFeed, rssFeed') where
 import Network.LambNyaa.Types
 import Network.LambNyaa.Source
 import Network.LambNyaa.Log
-import Network.LambNyaa.Log.IO
 import Text.RSS.Syntax
 import Text.Feed.Types hiding (Item)
 import Network.Download

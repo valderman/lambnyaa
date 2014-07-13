@@ -7,7 +7,7 @@ module Network.LambNyaa.Log.IO (
     LoggerHandle,
     addLogger, removeLogger, clearLoggers, setLoggers, getLogLevel, setLogLevel
   ) where
-import Network.LambNyaa.Log
+import Network.LambNyaa.Log.Core
 import System.IO.Unsafe
 import Control.Concurrent
 import Control.Monad

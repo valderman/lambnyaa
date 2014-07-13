@@ -11,7 +11,6 @@ import Network.LambNyaa.Types
 import Network.LambNyaa.Sink
 import Network.LambNyaa.Database
 import Network.LambNyaa.Log
-import Network.LambNyaa.Log.IO
 
 -- | Pause thread for a number of seconds.
 delaySecs :: Int -> IO ()
