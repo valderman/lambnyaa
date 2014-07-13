@@ -6,12 +6,15 @@ module Network.LambNyaa.Sink.RSS (
   ) where
 import Network.LambNyaa.Types
 import Network.LambNyaa.Sink
+import Network.LambNyaa.Log
 import System.Directory
 import System.IO
 import Text.RSS.Syntax
 import Text.RSS.Import
 import Text.RSS.Export
 import Text.XML.Light
+
+info' = info "Sink.RSS"
 
 -- | Default title for RSS feeds.
 defTitle :: String
@@ -24,7 +27,12 @@ writeRSS = writeRSS' defTitle "" ""
 -- | @writeRSS@ but with title, description and URL.
 writeRSS' :: String -> String -> URL -> FilePath -> Sink
 writeRSS' title desc url f =
-  withRSS' title desc url $ writeFile f . ppTopElement . xmlRSS
+    withRSS' title desc url act
+  where
+    act rss = do
+      let n = show $ length $ rssItems $ rssChannel rss
+      info' $ "Creating new RSS feed '" ++ title ++ "' with " ++ n ++ " items."
+      writeFile f . ppTopElement $ xmlRSS rss
 
 -- | Prepend the RSS feed to an existing file. Acts as @writeRSS@ if the file
 --   does not exist or is not a valid RSS feed.
@@ -45,7 +53,12 @@ updateRSS' title desc url f =
         length txt `seq` return txt
       case parseXMLDoc txt of
         Just e | Just oldrss <- elementToRSS e -> do
-          writeFile f $ ppTopElement $ xmlRSS $ rss `append` oldrss
+          let rss' = rss `append` oldrss
+              news = length $ rssItems $ rssChannel rss
+              tots = news + length (rssItems $ rssChannel oldrss)
+          info' $ "Updating RSS feed '" ++ title ++ "' with " ++ show news ++
+                  " new items, for a total of " ++ show tots ++ " items."
+          writeFile f $ ppTopElement $ xmlRSS rss'
         _ -> do
           writeFile f $ ppTopElement $ xmlRSS rss
 

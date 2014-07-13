@@ -2,9 +2,13 @@
 module Network.LambNyaa.Sink.Download where
 import Network.LambNyaa.Types
 import Network.LambNyaa.Sink
+import Network.LambNyaa.Log
 import Network.Download
 import System.FilePath
 import qualified Data.ByteString as BS
+
+err' = err "Sink.Download"
+info' = info "Sink.Download"
 
 -- | Download a file into <given directory>/<item name>.<given extension>
 download :: FilePath -> String -> Sink
@@ -16,8 +20,11 @@ download' :: (Item -> FilePath) -> Sink
 download' mkPath = sink_ . mapM_ $ \item -> do
   ef <- openURI (itmURL item)
   case ef of
-    Right f -> BS.writeFile (mkPath item) f
-    _       -> return ()
+    Right f -> do
+      info' $ "Saving '" ++ itmURL item ++ "' to '" ++ mkPath item ++ "'."
+      BS.writeFile (mkPath item) f
+    _       -> do
+      err' $ "Unable to fetch '" ++ itmURL item ++ "'!"
 
 -- | Turn path separator characters into spaces.
 sanitize :: FilePath -> FilePath
