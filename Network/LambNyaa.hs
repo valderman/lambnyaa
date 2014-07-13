@@ -15,7 +15,7 @@ module Network.LambNyaa (
   ) where
 import Data.Default
 import Data.Monoid
-import Network.LambNyaa.Config hiding (Action, Sink, Source)
+import Network.LambNyaa.Config hiding (Action, Sink)
 import Network.LambNyaa.Types
 import Network.LambNyaa.Source
 import Network.LambNyaa.Source.Nyaa
