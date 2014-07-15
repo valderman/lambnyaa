@@ -61,7 +61,7 @@ named name i = name == map toLower (itmName i)
 -- | True for all Items where the given string is a prefix to its name.
 --   Case insensitive.
 hasPrefix :: String -> Item -> Bool
-hasPrefix p i = p `isPrefixOf` map toLower (itmName i)
+hasPrefix p i = map toLower p `isPrefixOf` map toLower (itmName i)
 
 -- | True for all Items where the title ends in " - <number>". Underscores are
 --   interpreted as spaces.
