@@ -27,7 +27,7 @@ initDB c = execute_ c $ "CREATE TABLE _seen (id INTEGER PRIMARY KEY NOT NULL);"
 
 -- | Mark an item as seen or unseen.
 markSeen :: Int -> Bool -> Connection -> IO ()
-markSeen ident True c = execute c "INSERT INTO _seen VALUES (?)" (Only ident)
+markSeen ident True c = execute c "INSERT OR IGNORE INTO _seen VALUES (?)" (Only ident)
 markSeen ident _ c    = execute c "DELETE FROM _seen WHERE id = ?" (Only ident)
 
 -- | Was the given item seen before?
