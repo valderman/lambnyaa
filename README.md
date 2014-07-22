@@ -15,3 +15,8 @@ library include capabilities for downloading files, remembering which Items
 have been encountered in previous runs and publishing items as an RSS feed.
 
 **tl;dr it's a stream processing DSL with animu support**
+
+TODO
+----
+* Enable more specialized matching for series and the like.
+* Prevent duplicate accepts.
