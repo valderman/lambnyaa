@@ -4,7 +4,8 @@ module Network.LambNyaa.Sink.RSS (
     writeRSS, writeRSS',
     updateRSS, updateRSS'
   ) where
-import Network.LambNyaa.Types
+import Network.LambNyaa.Config
+import Network.LambNyaa.Item
 import Network.LambNyaa.Sink
 import Network.LambNyaa.Log
 import System.Directory

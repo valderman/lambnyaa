@@ -1,13 +1,10 @@
 module Network.LambNyaa.Config (
     Config, TimeUnit (..), Schedule (..),
-    Action (..), Sink (..), Filter,
     LogHandler, LogLevel,
-    cfgSources, cfgFilters, cfgSchedule, cfgDatabase, cfgLogHandlers,
-    cfgLogLevel, cfgCatchSignals,
+    cfgSchedule, cfgDatabase, cfgLogHandlers, cfgLogLevel, cfgCatchSignals,
     def
   ) where
 import Data.Default
-import {-# SOURCE #-} Network.LambNyaa.Types
 import Network.LambNyaa.Item
 import Network.LambNyaa.Log
 import System.IO.Unsafe
@@ -24,10 +21,6 @@ data Schedule = Once | Every Int TimeUnit
 
 -- | LambNyaa configuration.
 data Config = Config {
-    cfgSources      :: [Source],    -- ^ Sources to fetch items from.
-                                    --   Default: []
-    cfgFilters      :: [Filter],    -- ^ Filters to be applied to each Item.
-                                    --   Default: []
     cfgSchedule     :: Schedule,    -- ^ How often should runs recur, if at all?
                                     --   Default: Once
     cfgDatabase     :: FilePath,    -- ^ Which SQLite database file should be
@@ -43,8 +36,6 @@ data Config = Config {
 
 instance Default Config where
   def = Config {
-      cfgSources      = [],
-      cfgFilters      = [],
       cfgSchedule     = Once,
       cfgDatabase     = defaultDB,
       cfgLogHandlers  = [logToStderr],
@@ -61,31 +52,3 @@ defaultDB = unsafePerformIO $ do
   d <- doesDirectoryExist dir
   when (not d) $ createDirectory dir
   return $ dir </> "database.sqlite"
-
--- | Actions decide what happens to an Item after passing through a filter.
---   An Item may have one of two possible fates: either it is accepted into a
---   Sink, or it is passed to the next filter in the pipeline. Discarding an
---   item is implemented by accepting it into a no-op Sink.
-data Action = Accept [Sink] Item | Pass Item
-
--- | Filters are used to decide which Items are accepted into which sinks.
---   A Filter may accept or discard items, removing them from the stream,
---   or alter any aspect of an Item.
-type Filter = Item -> Action
-
--- | A Sink is the endpoint of a stream. It consists of an IO action taking a
---   list of Items as its input, contains all Items accepted into the sink.
-data Sink = Sink {
-    sinkHandler :: Config -> [Item] -> IO (),
-    sinkID      :: Int
-  }
-
-instance Eq Sink where
-  a == b = sinkID a == sinkID b
-
-instance Ord Sink where
-  a `compare` b = sinkID a `compare` sinkID b
-  a > b         = sinkID a > sinkID b
-  a >= b        = sinkID a >= sinkID b
-  a < b         = sinkID a < sinkID b
-  a <= b        = sinkID a <= sinkID b

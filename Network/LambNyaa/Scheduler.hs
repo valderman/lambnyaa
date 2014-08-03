@@ -7,7 +7,8 @@ import Data.Hashable
 import Data.List
 import qualified Database.SQLite.Simple as DB
 import Network.LambNyaa.Config
-import Network.LambNyaa.Types
+import Network.LambNyaa.Item
+import Network.LambNyaa.Monad
 import Network.LambNyaa.Sink
 import Network.LambNyaa.Database
 import Network.LambNyaa.Log
@@ -34,8 +35,8 @@ die mainthread = do
   throwTo mainthread ExitSuccess
 
 -- | Execute a pipeline according to schedule.
-schedule :: Config -> IO ()
-schedule cfg = do
+schedule :: Config -> Nyaa () -> IO ()
+schedule cfg ny = do
   setLogHandlers $ cfgLogHandlers cfg
   setLogLevel $ cfgLogLevel cfg
   tid <- myThreadId
@@ -46,12 +47,12 @@ schedule cfg = do
   case cfgSchedule cfg of
     Once              -> do
       info' "Starting oneshot run..."
-      tot <- execute cfg
-      info' $ "Run completed! " ++ show tot ++ " items processed."
-    (Every n Seconds) -> every n (show n ++ " seconds") $ execute cfg
-    (Every n Minutes) -> every (n*60) (show n ++ " minutes") $ execute cfg
-    (Every n Hours)   -> every (n*60*60) (show n ++ " hours") $ execute cfg
-    (Every n Days)    -> every (n*24*60*60) (show n ++ " days") $ execute cfg
+      tot <- execute cfg ny
+      info' $ "Run completed! " ++ show tot ++ " items accepted."
+    (Every n Seconds) -> every n (show n ++ " seconds") $ execute cfg ny
+    (Every n Minutes) -> every (n*60) (show n ++ " minutes") $ execute cfg ny
+    (Every n Hours)   -> every (n*60*60) (show n ++ " hours") $ execute cfg ny
+    (Every n Days)    -> every (n*24*60*60) (show n ++ " days") $ execute cfg ny
 
 -- | Perform an action every n seconds.
 every :: Int -> String -> IO Int -> IO ()
@@ -62,40 +63,10 @@ every secs sched act = do
     go = do
       info' "Starting new run..."
       tot <- act
-      info' $ "Run completed! " ++ show tot ++ " items processed."
+      info' $ "Run completed! " ++ show tot ++ " items accepted."
       delaySecs secs >> go
 
 -- | Execute a pipeline from Source to Sink, and return the total number of
 --   elements processed as well as the total number accepted.
-execute :: Config -> IO Int
-execute cfg = do
-  -- Create Items from sources
-  itemses <- mapM unSource $ cfgSources cfg
-  -- Fill in identifiers
-  let items = concat $ map (map (\i -> i {itmIdentifier = hash i})) itemses
-  -- Fill in seen before info
-  items' <- withSQLite cfg $ \c -> mapM (fillSeen c) items
-  -- Run pipeline
-  accepted <- fillSinks cfg [(sink, item) |
-                             flt <- cfgFilters cfg,
-                             Accept sinks item <- map flt items',
-                             sink <- sinks]
-  return (length items)
-
--- | Fill in the "seen before" field of an Item.
-fillSeen :: DB.Connection -> Item -> IO Item
-fillSeen c item = do
-  seen <- wasSeen (itmIdentifier item) c
-  return $ item {itmSeenBefore = seen}
-
--- | Batch all Items bound for a particular Sink, then shove that batch into
---   said Sink. Repeat for all distinct Sinks in list.
-fillSinks :: Config -> [(Sink, Item)] -> IO ()
-fillSinks cfg items = do
-    mapM_ feedSinks
-      . groupBy (\(a, _) (b, _) -> a == b)
-      . sortBy (\(a, _) (b, _) -> compare a b)
-      $ items
-  where
-    feedSinks :: [(Sink, Item)] -> IO ()
-    feedSinks xs = sinkHandler (fst $ head xs) cfg (map snd xs)
+execute :: Config -> Nyaa () -> IO Int
+execute cfg nyaa = withSQLite cfg $ \conn -> runNyaa (NyaaEnv conn cfg) nyaa

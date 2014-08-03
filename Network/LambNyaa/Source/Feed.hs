@@ -6,8 +6,8 @@
 --
 --   TODO: support for other feed formats.
 module Network.LambNyaa.Source.Feed (rssFeed, rssFeed') where
-import Network.LambNyaa.Types
-import Network.LambNyaa.Source
+import Network.LambNyaa.Item
+import Network.LambNyaa.Monad
 import Network.LambNyaa.Log
 import Text.RSS.Syntax
 import Text.Feed.Types hiding (Item)
@@ -19,13 +19,13 @@ err' = err "Source.Feed"
 
 -- | Create a Source from an RSS feed. The itmSource field of Items originating
 --   from this Source will contain the URL of the feed.
-rssFeed :: URL -> Source
+rssFeed :: URL -> Nyaa [Item]
 rssFeed url = rssFeed' url url
 
 -- | Create a Source from a named RSS feed. The itmSource field of Items
 --   originating from this Source will contain the given name.
-rssFeed' :: String -> URL -> Source
-rssFeed' src url = listIO $ do
+rssFeed' :: String -> URL -> Nyaa [Item]
+rssFeed' src url = source $ do
   ef <- openAsFeed url
   case ef of
     Right (RSSFeed rss) -> do

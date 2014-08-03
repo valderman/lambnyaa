@@ -2,24 +2,15 @@ module Network.LambNyaa.Sink (
     Sink (..), sink, sink_, printItem, seen, unseen
   ) where
 import Data.Monoid
-import Network.LambNyaa.Types
+import Network.LambNyaa.Config
+import Network.LambNyaa.Item
 import Network.LambNyaa.Database
-import System.IO.Unsafe
-import Data.IORef
 
-{-# NOINLINE sinkCtr #-}
-sinkCtr :: IORef Int
-sinkCtr = unsafePerformIO $ newIORef 0
+newtype Sink = Sink {unSink :: Config -> [Item] -> IO ()}
 
 -- | Create a Sink from any IO action.
-{-# NOINLINE sink #-}
 sink :: (Config -> [Item] -> IO ()) -> Sink
-sink f = unsafePerformIO $ do
-  ctr <- modifyRef sinkCtr (\ctr -> (ctr+1, ctr))
-  return $ Sink {
-      sinkHandler = f,
-      sinkID      = ctr
-    }
+sink = Sink
 
 -- | Create a Sink from any IO action; Config-less version.
 sink_ :: ([Item] -> IO ()) -> Sink
@@ -42,5 +33,5 @@ unseen = sink $ \cfg is -> withSQLite cfg $ \c -> do
 instance Monoid Sink where
   mempty = sink_ . const $ return ()
   mappend a b = sink $ \cfg is -> do
-    sinkHandler a cfg is
-    sinkHandler b cfg is
+    unSink a cfg is
+    unSink b cfg is

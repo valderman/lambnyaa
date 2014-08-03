@@ -2,7 +2,10 @@
 --   Items are produced from scraping the Nyaa search page.
 --   Torrent titles end up in the itmName field of the produced Items, and any
 --   phrases within square brackets go into the itmTags field.
-module Network.LambNyaa.Source.Nyaa (nyaaSearch) where
+module Network.LambNyaa.Source.Nyaa (
+    NyaaCat (..), Language (..), Software (..),
+    nyaaSearch, anime, live, literature, apps, games
+  ) where
 import Data.List (isPrefixOf)
 import Data.Maybe (catMaybes)
 import Data.Monoid
@@ -11,10 +14,67 @@ import Control.Applicative
 import Control.Monad
 import Network.Download
 import Text.HTML.TagSoup
-import Network.LambNyaa.Types
+import Network.LambNyaa.Item
+import Network.LambNyaa.Monad
 import Network.LambNyaa.Parser
-import Network.LambNyaa.Source
 import Network.LambNyaa.Log
+
+-- | Search for anime in a specific language.
+anime :: Language -> Maybe NyaaCat
+anime = Just . Anime . Just
+
+-- | Search for literature in a specific language.
+literature :: Language -> Maybe NyaaCat
+literature = Just . Literature . Just
+
+-- | Search for live action in a specific language.
+live :: Language -> Maybe NyaaCat
+live = Just . LiveAction . Just
+
+-- | Search for games.
+games :: Maybe NyaaCat
+games = Just $ Software $ Just Games
+
+-- | Search for applications.
+apps :: Maybe NyaaCat
+apps = Just $ Software $ Just Games
+
+-- | Narrow down searches based on medium and language.
+data NyaaCat
+  = Anime      (Maybe Language)
+  | Audio
+  | Literature (Maybe Language)
+  | LiveAction (Maybe Language)
+  | Pictures
+  | Software   (Maybe Software)
+  deriving (Show, Eq)
+
+data Language = English | Japanese | Other
+  deriving (Show, Eq)
+data Software = Apps | Games
+  deriving (Show, Eq)
+
+toQuery :: Maybe NyaaCat -> String
+toQuery Nothing = "0_0"
+toQuery (Just what) =
+  case what of
+    Anime Nothing              -> "1_0"
+    Anime (Just English)       -> "1_37"
+    Anime (Just Japanese)      -> "1_11"
+    Anime (Just Other)         -> "1_38"
+    Audio                      -> "3_0"
+    Literature Nothing         -> "2_0"
+    Literature (Just English)  -> "2_12"
+    Literature (Just Japanese) -> "2_13"
+    Literature (Just Other)    -> "2_39"
+    LiveAction Nothing         -> "5_0"
+    LiveAction (Just English)  -> "5_19"
+    LiveAction (Just Japanese) -> "5_20"
+    LiveAction (Just Other)    -> "5_21"
+    Pictures                   -> "4_0"
+    Software Nothing           -> "6_0"
+    Software (Just Apps)       -> "6_23"
+    Software (Just Games)      -> "6_24"
 
 err'  = err "Source.Nyaa"
 warn' = warn "Source.Nyaa"
@@ -22,9 +82,10 @@ warn' = warn "Source.Nyaa"
 -- | Create an Item source from a Nyaa search. This relies on parsing the HTML
 --   of the Nyaa search page, so it'll break any time their search page gets an
 --   overhaul.
-nyaaSearch :: String -> Source
-nyaaSearch s = listIO $ do
-  ets <- openAsTags $ "http://www.nyaa.se/?page=search&term=" ++ encode s
+nyaaSearch :: Maybe NyaaCat -> String -> Nyaa [Item]
+nyaaSearch cat s = source $ do
+  ets <- openAsTags $ concat ["http://www.nyaa.se/?page=search&cats=",
+                              toQuery cat, "&term=", encode s]
   case ets of
     Right es -> do
       let is = getItems es
@@ -58,6 +119,8 @@ splitByViewLinks =
 
 mkItem :: String -> URL -> Item
 mkItem title url = Item {
+      itmIdentifier  = undefined,
+      itmSeenBefore  = undefined,
       itmName        = name,
       itmURL         = url,
       itmSource      = "Nyaa",
