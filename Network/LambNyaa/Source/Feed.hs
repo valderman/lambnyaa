@@ -41,6 +41,8 @@ getItems src = map (getItem src) . rssItems
 
 getItem :: String -> RSSItem -> Item
 getItem src item = Item {
+    itmIdentifier  = undefined,
+    itmSeenBefore  = undefined,
     itmName        = maybe "" id (rssItemTitle item),
     itmURL         = maybe "" id (rssItemLink item),
     itmDescription = rssItemDescription item,
